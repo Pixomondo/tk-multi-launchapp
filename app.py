@@ -526,6 +526,50 @@ class LaunchApplication(tank.platform.Application):
         startup_path = os.path.abspath(os.path.join(self._get_app_specific_path("photoshop"), "startup"))
         tank.util.append_path_to_env_var("PYTHONPATH", startup_path)
 
+    def prepare_cinema4d_launch(self):
+        """Cinema4D specific pre-launch environment setup."""
+
+        startup_path = os.path.abspath(os.path.join(
+            self._get_app_specific_path("cinema4d"), "startup"))
+
+        # Add Tank Bootstrap plugin to Cinema 4D plugin path.
+        tank.util.append_path_to_env_var("C4D_PLUGINS_DIR", startup_path)
+
+        if sys.platform == "win32":
+            # C4D R13/R14 have several problems. Let's fix those.
+            versions = ['13', '14']
+            for version in versions:
+                # This is the first guess we are making.
+                # Version doesn't have to be in _app_path.
+                if version in self._app_path:
+                    # Missing _ssl.pyd. Adding ssl_patch to the PYTHONPATH.
+                    ssl_path = os.path.abspath(os.path.join(startup_path,
+                                                            "ssl_patch"))
+                    tank.util.prepend_path_to_env_var("PYTHONPATH", ssl_path)
+
+                    # C4D_PLUGINS_DIR is not split up properly inside of C4D.
+                    # This small script splits the path up for C4D.
+                    # Unfortunately it has to be copied to the user preferences
+                    # folder (python_init.py).
+                    patch_path = os.path.abspath(os.path.join(startup_path,
+                                                              "env_patch"))
+                    init = "python_init.py"
+                    patch_py = os.path.join(patch_path, init)
+                    # We are guessing where the user folder is located.
+                    # We are also guessing how it's going to be named.
+                    maxon = os.path.join(os.environ.get('APPDATA'), 'MAXON')
+                    prefs = [f for f in os.listdir(maxon) if version in f]
+                    for pref in prefs:
+                        init_path = os.path.join(maxon, pref, 'prefs',
+                                                 'python', init)
+                        if not os.path.exists(init_path):
+                            import shutil
+                            try:
+                                shutil.copyfile(patch_py, init_path)
+                                self.log_info("C4D_PLUGINS_DIR fix copied.")
+                            except:
+                                warn = "Problem copying C4D_PLUGINS_DIR fix."
+                                self.log_warning(warn)
 
     def _get_app_specific_path(self, app_dir):
         """
