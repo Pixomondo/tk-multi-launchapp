@@ -250,6 +250,8 @@ class LaunchApplication(tank.platform.Application):
                 app_args = self.prepare_3dsmax_plus_launch(context, app_args)
             elif engine_name == "tk-hiero":
                 self.prepare_hiero_launch()
+            elif engine_name == "tk-mari":
+                self.prepare_mari_launch()
             elif engine_name == "tk-photoshop":
                 self.prepare_photoshop_launch(context)
             elif engine_name == "tk-houdini":
@@ -526,6 +528,14 @@ class LaunchApplication(tank.platform.Application):
         startup_path = os.path.abspath(os.path.join(self._get_app_specific_path("photoshop"), "startup"))
         tank.util.append_path_to_env_var("PYTHONPATH", startup_path)
 
+    def prepare_mari_launch(self):
+        """
+        Mari specific pre-launch environment setup.
+        """
+        app_path = self._get_app_specific_path
+        startup_path = os.path.abspath(os.path.join(app_path("mari"),
+                                                    "startup"))
+        tank.util.append_path_to_env_var("MARI_SCRIPT_PATH", startup_path)
 
     def _get_app_specific_path(self, app_dir):
         """
