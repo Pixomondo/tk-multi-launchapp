@@ -120,6 +120,11 @@ configuration:
                      to add additional pipeline paths, APIs or other things to the setup, or 
                      specify additional scripts etc to run."
 
+    hook_populate_versions:
+        type: hook
+        default_value: populate_versions
+        description: "Called to modify or fill the versions list."
+
 # the Shotgun fields that this app needs in order to operate correctly
 requires_shotgun_fields:
 
