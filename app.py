@@ -37,6 +37,7 @@ class LaunchApplication(tank.platform.Application):
             return
 
         versions = self.get_setting("versions")
+        versions = self.execute_hook("hook_populate_versions", versions=versions)
         menu_name = self.get_setting("menu_name")
 
         # get icon value, replacing tokens if needed
